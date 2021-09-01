@@ -37,9 +37,9 @@ Clone the project
 5. Run Insert
 ## Screenshots
 
-![Bulk Update](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
+![Bulk Update](/Screenshots/BulkUpdate.PNG)
 
-![Bulk Insert](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
+![Bulk Insert](/Screenshots/BulkInsert.PNG)
 ## Authors
 
 - [Alik Lorenz](https://github.com/lorenza12)
