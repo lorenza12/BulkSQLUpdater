@@ -1,0 +1,443 @@
+﻿<Window x:Class="BulkSQLUpdater.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BulkSQLUpdater"
+        mc:Ignorable="d"
+        Title="Bulk SQL Updater" Height="850" Width="700" ResizeMode="NoResize">
+
+
+    <TabControl Background="SlateGray">
+        <TabItem x:Name="BulkUpdate_TabItem">
+            <TabItem.Header>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text=" &lt;--&gt; Bulk Update" Foreground="Orange" FontWeight="SemiBold"/>
+                </StackPanel>
+            </TabItem.Header>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="220"/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="230"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+
+                <GroupBox Margin="10,0,10,10" Padding="10" Width="auto" Grid.Column="0" Grid.Row="0" Background="WhiteSmoke" BorderBrush="Black">
+                    <GroupBox.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock FontWeight="Bold" Padding="0,20,0,0" TextDecorations="Underline" Foreground="Orange">Step 1. Connect To Server</TextBlock>
+                        </StackPanel>
+                    </GroupBox.Header>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Label Name="server_lbl" Content="Server:" Grid.Row="0" Grid.Column="0"  VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="13" Height="25"/>
+                        <TextBox x:Name="server_txtbox" Grid.Row="0" Grid.Column="1"   Width="175" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="13" Height="25" BorderBrush="Black"/>
+
+                        <Label Name="database_lbl" Content="Database:" Grid.Row="0" Grid.Column="2"  VerticalAlignment="Center" HorizontalAlignment="Right"  FontSize="13" Height="25"/>
+                        <TextBox x:Name="database_txtbox" Grid.Row="0" Grid.Column="3"  Width="175" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="13" Height="25" BorderBrush="Black"/>
+
+                        <Label Name="username_lbl" Content="User:" Grid.Row="1" Grid.Column="0"   VerticalAlignment="Center" HorizontalAlignment="Right"  FontSize="13" Height="25" BorderBrush="Black"/>
+                        <TextBox x:Name="username_txtbox" Grid.Row="1" Grid.Column="1"   Width="175" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="13" Height="25" BorderBrush="Black"/>
+
+                        <Label Name="password_lbl" Content="Password:" Grid.Row="1" Grid.Column="2"  VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="13" Height="25" />
+                        <TextBox x:Name="password_txtbox" Grid.Row="1" Grid.Column="3"  Width="175" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="13" Height="25" BorderBrush="Black"/>
+
+                        <Button x:Name="testConnection_btn" Grid.Row="0" Grid.Column="3" Content="Test" Width="75" Height="25" VerticalAlignment="Center" HorizontalAlignment="Right"  Click="testConnection_btn_Click">
+                            <Button.Style>
+                                <Style>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding ="{Binding ElementName=server_txtbox, Path=Text.Length}" Value="0">
+                                            <Setter Property="Button.IsEnabled" Value="false"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding ="{Binding ElementName=database_txtbox, Path=Text.Length}" Value="0">
+                                            <Setter Property="Button.IsEnabled" Value="false"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        <Label Name="selectTable_lbl" Content="Select Table:" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="13" Height="25"/>
+                        <ComboBox x:Name="tables_cmbobox" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Width="275" Height="25" HorizontalAlignment="Center" IsEnabled="False" SelectionChanged="tables_cmbobox_SelectionChanged"/>
+                        <Button x:Name="selectTable_btn" Grid.Row="2" Grid.Column="3" Content="Select" Width="75" Height="25" VerticalAlignment="Center" HorizontalAlignment="Right" IsEnabled="False" Click="selectTable_btn_Click"/>
+
+                        <TextBlock Name="badConnection_lbl"  Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="4" VerticalAlignment="Bottom" HorizontalAlignment="Center" FontSize="13" Height="25" FontWeight="SemiBold" Foreground="Red" Visibility="Hidden">
+                    The connection could not be established. Please check connection values and try again.
+                        </TextBlock>
+
+
+                    </Grid>
+                </GroupBox>
+
+                <GroupBox Margin="10,-15,10,0" Padding="10" Width="auto" Height="Auto" Grid.Column="0" Grid.Row="1" Background="WhiteSmoke" BorderBrush="Black">
+                    <GroupBox.Header>
+                        <StackPanel Orientation="Vertical">
+                            <Label FontWeight="Bold" Padding="0,25,0,0">
+                                <TextBlock TextDecorations="Underline" Foreground="Orange">Step 2. Select Columns To Update</TextBlock>
+                            </Label>
+                            <Label Margin="2,0,0,-20" FontWeight="Medium">
+                                <TextBlock>- The first selected column MUST be a unique identification column to the table so the update can link correctly.</TextBlock>
+                            </Label>
+                        </StackPanel>
+                    </GroupBox.Header>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Column="0" Grid.Row="0" Margin="0,2,0,0" HorizontalAlignment="Center" VerticalAlignment="Top" TextDecorations="Underline">Available Columns</TextBlock>
+
+                        <ListBox x:Name="columns_lstbox" Grid.Column="0" Grid.Row="0" Width="225" Height="200" Margin="10,20,10,10" BorderBrush="Black" >
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding ColumnName}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+
+                        </ListBox>
+
+
+                        <Button x:Name="addColumn_btn" Content="Add &gt;&gt;" Grid.Row="0" Grid.Column="1" Height="25" Width="100" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,10,0,50" Click="addColumn_btn_Click">
+                            <Button.Style>
+                                <Style>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding ="{Binding ElementName=columns_lstbox, Path=SelectedIndex}" Value="-1">
+                                            <Setter Property="Button.IsEnabled" Value="false"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        <Button x:Name="removeColumn_btn" Content="&lt;&lt; Remove" Grid.Row="0" Grid.Column="1" Height="25" Width="100" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,50,0,-10"  Click="removeColumn_btn_Click">
+                            <Button.Style>
+                                <Style>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding ="{Binding ElementName=columnsSelected_lstbox, Path=SelectedIndex}" Value="-1">
+                                            <Setter Property="Button.IsEnabled" Value="false"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <TextBlock Grid.Column="2" Grid.Row="0" Margin="0,2,0,0" HorizontalAlignment="Center" VerticalAlignment="Top" TextDecorations="Underline">Selected Columns</TextBlock>
+
+                        <ListBox x:Name="columnsSelected_lstbox" Grid.Column="2" Grid.Row="0" Width="225" Height="200" Margin="10,20,10,10" BorderBrush="Black">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding ColumnName}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+
+                    </Grid>
+                </GroupBox>
+
+                <GroupBox Margin="10,0,10,0" Padding="10" Width="Auto" Height="Auto" Grid.Column="0" Grid.Row="2" Background="WhiteSmoke" BorderBrush="Black">
+                    <GroupBox.Header>
+                        <StackPanel Orientation="Vertical">
+                            <Label FontWeight="Bold" Padding="0,20,0,0">
+                                <TextBlock TextDecorations="Underline" Foreground="Orange"> Step 3. Choose CSV File</TextBlock>
+                            </Label>
+                            <Label Margin="2,0,0,-30" FontWeight="Medium">- Select csv file containing data to update. The csv data must match the order of the columns selected above.</Label>
+                        </StackPanel>
+                    </GroupBox.Header>
+                    <StackPanel Orientation="Vertical" Margin="0,10,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <Label Name="csvFile_lbl" Content="CSV File Path:" VerticalAlignment="Center" HorizontalAlignment="Right"  FontSize="13" />
+                            <TextBox x:Name="csvFilePath_txtbox" Width="300" Height="25" VerticalAlignment="Center" HorizontalAlignment="Left"  FontSize="13" BorderBrush="Black"/>
+                            <Button x:Name="browse_btn" Content="Browse" Width="75" Height="25" HorizontalAlignment="Left" Margin="15" Click="browse_btn_Click"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Label Name="csvdelimiter_lbl" Content="Delimiter:" VerticalAlignment="Center" HorizontalAlignment="Right"  FontSize="13" Margin="12,0,10,0"/>
+                            <ComboBox x:Name="csvDelimiter_cmbobox"  Width="300" Height="25" VerticalAlignment="Center" HorizontalAlignment="Left"  FontSize="13" BorderBrush="Black">
+                                <ComboBoxItem Content=", (comma)" Tag="," IsSelected="True"/>
+                                <ComboBoxItem Content=". (period)" Tag="."/>
+                                <ComboBoxItem Content="; (semicolon)" Tag=";"/>
+                                <ComboBoxItem Content="| (pipe)" Tag="|"/>
+                                <ComboBoxItem Content="&lt;space&gt;" Tag=" "/>
+                                <ComboBoxItem Content="&lt;tab&gt;" Tag="\t"/>
+                            </ComboBox>
+                            <CheckBox x:Name="hasHeaders_chckbox" Content="File Has Headers" Margin="10,10,0,10" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Vertical">
+                            <Button x:Name="update_btn" Content="Run Update" Width="100" Height="25" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,15,0,0" ToolTip="Update database with file values" Click="update_btn_Click">
+                                <Button.Style>
+                                    <Style>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding ="{Binding ElementName=columnsSelected_lstbox, Path=Items.Count}" Value="0">
+                                                <Setter Property="Button.IsEnabled" Value="false"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding ="{Binding ElementName=columnsSelected_lstbox, Path=Items.Count}" Value="1">
+                                                <!-- selected columns must be greater than 1 because first column must be primary key-->
+                                                <Setter Property="Button.IsEnabled" Value="false"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding ="{Binding ElementName=csvFilePath_txtbox, Path=Text.Length}" Value="0">
+                                                <Setter Property="Button.IsEnabled" Value="false"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            <TextBlock x:Name="status_txtblock" FontSize="13" HorizontalAlignment="Center" Margin="0,10,0,0" Visibility="Hidden"/>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+
+
+                <DockPanel Grid.Row="50" Dock="Bottom" VerticalAlignment="Bottom" Grid.ColumnSpan="100" >
+                    <StatusBar DockPanel.Dock="Bottom" BorderThickness="0,1,0,0" BorderBrush="Black" Height="25" >
+                        <StackPanel Orientation="Horizontal">
+                            <ProgressBar x:Name="loading_progressBar" Minimum="0" Maximum="100" Width="675" Height="15" Margin="10,0,0,0" HorizontalAlignment="Left" IsIndeterminate="True" Visibility="Hidden"/>
+                        </StackPanel>
+                    </StatusBar>
+                </DockPanel>
+
+            </Grid>
+        </TabItem>
+
+
+
+        <TabItem x:Name="BulkInsert_TabItem">
+            <TabItem.Header>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="+ Bulk Insert" Foreground="Blue" FontWeight="SemiBold"/>
+                </StackPanel>
+            </TabItem.Header>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="220"/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="230"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+
+                <GroupBox Margin="10,0,10,10" Padding="10" Width="auto" Grid.Column="0" Grid.Row="0" Background="WhiteSmoke" BorderBrush="Black">
+                    <GroupBox.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock FontWeight="Bold" Padding="0,20,0,0" TextDecorations="Underline" Foreground="Blue">Step 1. Connect To Server</TextBlock>
+                        </StackPanel>
+                    </GroupBox.Header>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Label Name="serverBulkInsert_lbl" Content="Server:" Grid.Row="0" Grid.Column="0"  VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="13" Height="25"/>
+                        <TextBox x:Name="serverBulkInsert_txtbox" Grid.Row="0" Grid.Column="1"   Width="175" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="13" Height="25" BorderBrush="Black"/>
+
+                        <Label Name="databaseBulkInsert_lbl" Content="Database:" Grid.Row="0" Grid.Column="2"  VerticalAlignment="Center" HorizontalAlignment="Right"  FontSize="13" Height="25"/>
+                        <TextBox x:Name="databaseBulkInsert_txtbox" Grid.Row="0" Grid.Column="3"  Width="175" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="13" Height="25" BorderBrush="Black"/>
+
+                        <Label Name="usernameBulkInsert_lbl" Content="User:" Grid.Row="1" Grid.Column="0"   VerticalAlignment="Center" HorizontalAlignment="Right"  FontSize="13" Height="25" BorderBrush="Black"/>
+                        <TextBox x:Name="usernameBulkInsert_txtbox" Grid.Row="1" Grid.Column="1"   Width="175" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="13" Height="25" BorderBrush="Black"/>
+
+                        <Label Name="passwordBulkInsert_lbl" Content="Password:" Grid.Row="1" Grid.Column="2"  VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="13" Height="25" />
+                        <TextBox x:Name="passwordBulkInsert_txtbox" Grid.Row="1" Grid.Column="3"  Width="175" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="13" Height="25" BorderBrush="Black"/>
+
+                        <Button x:Name="testConnectionBulkInsert_btn" Grid.Row="0" Grid.Column="3" Content="Test" Width="75" Height="25" VerticalAlignment="Center" HorizontalAlignment="Right"  Click="testConnectionBulkInsert_btn_Click">
+                            <Button.Style>
+                                <Style>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding ="{Binding ElementName=serverBulkInsert_txtbox, Path=Text.Length}" Value="0">
+                                            <Setter Property="Button.IsEnabled" Value="false"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding ="{Binding ElementName=databaseBulkInsert_txtbox, Path=Text.Length}" Value="0">
+                                            <Setter Property="Button.IsEnabled" Value="false"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        <Label Name="selectTableBulkInsert_lbl" Content="Select Table:" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="13" Height="25"/>
+                        <ComboBox x:Name="tablesBulkInsert_cmbobox" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Width="275" Height="25" HorizontalAlignment="Center" IsEnabled="False" SelectionChanged="tablesBulkInsert_cmbobox_SelectionChanged"/>
+                        <Button x:Name="selectTableBulkInsert_btn" Grid.Row="2" Grid.Column="3" Content="Select" Width="75" Height="25" VerticalAlignment="Center" HorizontalAlignment="Right" IsEnabled="False" Click="selectTableBulkInsert_btn_Click"/>
+
+                        <TextBlock Name="badConnectionBulkInsert_lbl"  Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="4" VerticalAlignment="Bottom" HorizontalAlignment="Center" FontSize="13" Height="25" FontWeight="SemiBold" Foreground="Red" Visibility="Hidden">
+                    The connection could not be established. Please check connection values and try again.
+                        </TextBlock>
+
+
+                    </Grid>
+                </GroupBox>
+
+                <GroupBox Margin="10,-15,10,0" Padding="10" Width="auto" Height="Auto" Grid.Column="0" Grid.Row="1" Background="WhiteSmoke" BorderBrush="Black">
+                    <GroupBox.Header>
+                        <StackPanel Orientation="Vertical">
+                            <Label FontWeight="Bold" Padding="0,25,0,0">
+                                <TextBlock TextDecorations="Underline" Foreground="Blue" >Step 2. Select Columns To Update</TextBlock>
+                            </Label>
+                            <Label Margin="2,0,0,-20" FontWeight="Medium">
+                                <TextBlock>- Select the columns you wish to insert into. Must be the same number of columns in csv file.</TextBlock>
+                            </Label>
+                        </StackPanel>
+                    </GroupBox.Header>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Column="0" Grid.Row="0" Margin="0,2,0,0" HorizontalAlignment="Center" VerticalAlignment="Top" TextDecorations="Underline">Available Columns</TextBlock>
+
+                        <ListBox x:Name="columnsBulkInsert_lstbox" Grid.Column="0" Grid.Row="0" Width="225" Height="200" Margin="10,20,10,10" BorderBrush="Black" >
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding ColumnName}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+
+                        </ListBox>
+
+
+                        <Button x:Name="addColumnBulkInsert_btn" Content="Add &gt;&gt;" Grid.Row="0" Grid.Column="1" Height="25" Width="100" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,10,0,50" Click="addColumnBulkInsert_btn_Click">
+                            <Button.Style>
+                                <Style>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding ="{Binding ElementName=columnsBulkInsert_lstbox, Path=SelectedIndex}" Value="-1">
+                                            <Setter Property="Button.IsEnabled" Value="false"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        <Button x:Name="removeColumnBulkInsert_btn" Content="&lt;&lt; Remove" Grid.Row="0" Grid.Column="1" Height="25" Width="100" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,50,0,-10"  Click="removeColumnBulkInsert_btn_Click">
+                            <Button.Style>
+                                <Style>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding ="{Binding ElementName=columnsSelectedBulkInsert_lstbox, Path=SelectedIndex}" Value="-1">
+                                            <Setter Property="Button.IsEnabled" Value="false"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <TextBlock Grid.Column="2" Grid.Row="0" Margin="0,2,0,0" HorizontalAlignment="Center" VerticalAlignment="Top" TextDecorations="Underline">Selected Columns</TextBlock>
+
+                        <ListBox x:Name="columnsSelectedBulkInsert_lstbox" Grid.Column="2" Grid.Row="0" Width="225" Height="200" Margin="10,20,10,10" BorderBrush="Black">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding ColumnName}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+
+                    </Grid>
+                </GroupBox>
+
+                <GroupBox Margin="10,0,10,0" Padding="10" Width="Auto" Height="Auto" Grid.Column="0" Grid.Row="2" Background="WhiteSmoke" BorderBrush="Black">
+                    <GroupBox.Header>
+                        <StackPanel Orientation="Vertical">
+                            <Label FontWeight="Bold" Padding="0,20,0,0">
+                                <TextBlock TextDecorations="Underline" Foreground="Blue" > Step 3. Choose CSV File</TextBlock>
+                            </Label>
+                            <Label Margin="2,0,0,-30" FontWeight="Medium">- Select csv file containing data to insert. The data will insert into the columns in the order of the columns selected.</Label>
+                        </StackPanel>
+                    </GroupBox.Header>
+                    <StackPanel Orientation="Vertical" Margin="0,10,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <Label Name="csvFileBulkInsert_lbl" Content="CSV File Path:" VerticalAlignment="Center" HorizontalAlignment="Right"  FontSize="13" />
+                            <TextBox x:Name="csvFilePathBulkInsert_txtbox" Width="300" Height="25" VerticalAlignment="Center" HorizontalAlignment="Left"  FontSize="13" BorderBrush="Black"/>
+                            <Button x:Name="browseBulkInsert_btn" Content="Browse" Width="75" Height="25" HorizontalAlignment="Left" Margin="15" Click="browseBulkInsert_btn_Click"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Label Name="csvdelimiterBulkInsert_lbl" Content="Delimiter:" VerticalAlignment="Center" HorizontalAlignment="Right"  FontSize="13" Margin="12,0,10,0"/>
+                            <ComboBox x:Name="csvDelimiterBulkInsert_cmbobox"  Width="300" Height="25" VerticalAlignment="Center" HorizontalAlignment="Left"  FontSize="13" BorderBrush="Black">
+                                <ComboBoxItem Content=", (comma)" Tag="," IsSelected="True"/>
+                                <ComboBoxItem Content=". (period)" Tag="."/>
+                                <ComboBoxItem Content="; (semicolon)" Tag=";"/>
+                                <ComboBoxItem Content="| (pipe)" Tag="|"/>
+                                <ComboBoxItem Content="&lt;space&gt;" Tag=" "/>
+                                <ComboBoxItem Content="&lt;tab&gt;" Tag="\t"/>
+                            </ComboBox>
+                            <CheckBox x:Name="hasHeadersBulkInsert_chckbox" Content="File Has Headers" Margin="10,10,0,10" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Vertical">
+                            <Button x:Name="insert_btn" Content="Run Insert" Width="100" Height="25" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,15,0,0" ToolTip="Update database with file values" Click="insert_btn_Click">
+                                <Button.Style>
+                                    <Style>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding ="{Binding ElementName=columnsSelectedBulkInsert_lstbox, Path=Items.Count}" Value="0">
+                                                <Setter Property="Button.IsEnabled" Value="false"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding ="{Binding ElementName=columnsSelectedBulkInsert_lstbox, Path=Items.Count}" Value="1">
+                                                <!-- selected columns must be greater than 1 because first column must be primary key-->
+                                                <Setter Property="Button.IsEnabled" Value="false"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding ="{Binding ElementName=csvFilePathBulkInsert_txtbox, Path=Text.Length}" Value="0">
+                                                <Setter Property="Button.IsEnabled" Value="false"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            <TextBlock x:Name="statusBulkInsert_txtblock" FontSize="13" HorizontalAlignment="Center" Margin="0,10,0,0" Visibility="Hidden"/>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+
+
+                <DockPanel Grid.Row="50" Dock="Bottom" VerticalAlignment="Bottom" Grid.ColumnSpan="100" >
+                    <StatusBar DockPanel.Dock="Bottom" BorderThickness="0,1,0,0" BorderBrush="Black" Height="25" >
+                        <StackPanel Orientation="Horizontal">
+                            <ProgressBar x:Name="loadingBulkInsert_progressBar" Minimum="0" Maximum="100" Width="675" Height="15" Margin="10,0,0,0" HorizontalAlignment="Left" IsIndeterminate="True" Visibility="Hidden"/>
+                        </StackPanel>
+                    </StatusBar>
+                </DockPanel>
+
+            </Grid>
+        </TabItem>
+
+
+    </TabControl>
+
+</Window>
